@@ -30,7 +30,7 @@ var (
 
 	// Frequence format
 	format = func(t *Tree) string {
-		return fmt.Sprintf("%s (f:%d)", t.val, t.freq)
+		return fmt.Sprintf("%d", t.val)
 	}
 
 	// Position format
@@ -55,20 +55,19 @@ func NewPoint() *Point {
 
 // Tree
 type Tree struct {
-	*Point        // t position
-	freq   int    // frequency of occurrence
-	val    string // content
-	left   *Tree  // left child
-	right  *Tree  // right child
-	h      int    // height
+	*Point       // t position
+	val    int   // the integer value
+	left   *Tree // left child
+	right  *Tree // right child
+	h      int   // height
 }
 
 func (n *Tree) String() string {
-	return fmt.Sprintf("%s %s", n.val, n.Point)
+	return fmt.Sprintf("%d %s", n.val, n.Point)
 }
 
 func NewTree() *Tree {
-	return &Tree{NewPoint(), 1, "", nil, nil, 0}
+	return &Tree{NewPoint(), 0, nil, nil, 0}
 }
 
 // Compute the tree height
@@ -159,7 +158,7 @@ func avl(n *Tree) *Tree {
 }
 
 // Insert a value in tree
-func Insert(t *Tree, val string) *Tree {
+func Insert(t *Tree, val int) *Tree {
 	if t == nil {
 		t := NewTree()
 		t.val = val
@@ -167,7 +166,6 @@ func Insert(t *Tree, val string) *Tree {
 	}
 
 	if t.val == val {
-		t.freq++
 	} else if t.val > val {
 		t.left = Insert(t.left, val)
 	} else {
@@ -178,7 +176,7 @@ func Insert(t *Tree, val string) *Tree {
 }
 
 // Search a value in tree
-func Search(t *Tree, val string) bool {
+func Search(t *Tree, val int) bool {
 
 	res := false
 
@@ -276,7 +274,8 @@ func main() {
 	var t *Tree
 
 	for _, v := range os.Args[1:] {
-		t = Insert(t, v)
+		val, _ := strconv.Atoi(v)
+		t = Insert(t, val)
 	}
 
 	// Send result to stdout

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -67,15 +66,30 @@ func (n *Tree) String() string {
 }
 
 func NewTree() *Tree {
-	return &Tree{NewPoint(), 0, nil, nil, 0}
+	t := &Tree{NewPoint(), 0, nil, nil, 0}
+	t.h = 1 + Max(H(t.left), H(t.right))
+	return t
 }
 
 // Compute the tree height
-func Height(t *Tree) float64 {
-	if t == nil {
-		return 0
+
+// Max returns the larger of x or y.
+func Max(x, y int) int {
+	if x < y {
+		return y
 	}
-	return math.Max(Height(t.left), Height(t.right)) + float64(1)
+	return x
+}
+
+func H(n *Tree) int {
+	if n == nil {
+		return -1
+	}
+	return n.h
+}
+
+func Height(t *Tree) int {
+	return 1 + Max(H(t.left), H(t.right))
 }
 
 // Display tree in pre order
@@ -108,13 +122,6 @@ func Postfixe(t *Tree) {
 	fmt.Print(t, " ")
 }
 
-func H(n *Tree) int {
-	if n == nil {
-		return 0
-	}
-	return n.h
-}
-
 func rotateL(n *Tree) *Tree {
 	tmp := n.right
 	n.right = tmp.left
@@ -131,27 +138,29 @@ func rotateR(n *Tree) *Tree {
 
 func avl(n *Tree) *Tree {
 
-	n.h = int(Height(n))
+	n.h = 1 + Max(H(n.left), H(n.right))
+
+	if H(n.left)-H(n.right) == 2 {
+
+		// Je fais la rotation G le sous arbre gauche
+		if H(n.left.left) < H(n.left.right) {
+			n.left = rotateL(n.left)
+		}
+
+		// Dans tous les cas je fais la rotation simple
+		return rotateR(n)
+	}
 
 	if H(n.left)-H(n.right) == -2 {
 		// Je fais la rotation inverse sur le sous arbre droit
 
 		// Je fais la rotation D le sous arbre droit
-		if H(n.right) < H(n.left) {
-			rotateR(n.right)
+		if H(n.right.right) < H(n.right.left) {
+			n.right = rotateR(n.right)
 		}
 
 		// Dans tous les cas je fais la rotation simple
-		n = rotateL(n)
-	} else if H(n.left)-H(n.right) == 2 {
-
-		// Je fais la rotation G le sous arbre gauche
-		if H(n.left) < H(n.right) {
-			rotateL(n.left)
-		}
-
-		// Dans tous les cas je fais la rotation simple
-		n = rotateR(n)
+		return rotateL(n)
 	}
 
 	return n
@@ -165,10 +174,9 @@ func Insert(t *Tree, val int) *Tree {
 		return t
 	}
 
-	if t.val == val {
-	} else if t.val > val {
+	if val < t.val {
 		t.left = Insert(t.left, val)
-	} else {
+	} else if val > t.val {
 		t.right = Insert(t.right, val)
 	}
 
@@ -249,7 +257,7 @@ func Display(t *Tree, w io.Writer) {
 
 	tWidth := Position(t, 0, 0)
 	tHeight := Height(t)
-
+	fmt.Println(tHeight)
 	canvas := svg.New(w)
 	canvas.Start(canvasWidth, canvasHeight)
 	canvas.Rect(0, 0, canvasWidth, canvasHeight, rectStyle)

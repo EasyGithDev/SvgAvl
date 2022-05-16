@@ -58,7 +58,6 @@ type Tree struct {
 	val    int   // the integer value
 	left   *Tree // left child
 	right  *Tree // right child
-	h      int   // height
 }
 
 func (n *Tree) String() string {
@@ -66,9 +65,7 @@ func (n *Tree) String() string {
 }
 
 func NewTree() *Tree {
-	t := &Tree{NewPoint(), 0, nil, nil, 0}
-	t.h = 1 + Max(H(t.left), H(t.right))
-	return t
+	return &Tree{NewPoint(), 0, nil, nil}
 }
 
 // Compute the tree height
@@ -81,15 +78,11 @@ func Max(x, y int) int {
 	return x
 }
 
-func H(n *Tree) int {
-	if n == nil {
-		return -1
-	}
-	return n.h
-}
-
 func Height(t *Tree) int {
-	return 1 + Max(H(t.left), H(t.right))
+	if t == nil {
+		return 0
+	}
+	return 1 + Max(Height(t.left), Height(t.right))
 }
 
 // Display tree in pre order
@@ -138,12 +131,12 @@ func rotateR(n *Tree) *Tree {
 
 func avl(n *Tree) *Tree {
 
-	n.h = 1 + Max(H(n.left), H(n.right))
+	fmt.Printf("node %s , left %s, right %s\n", n, n.left, n.right)
 
-	if H(n.left)-H(n.right) == 2 {
+	if Height(n.left)-Height(n.right) == 2 {
 
 		// Je fais la rotation G le sous arbre gauche
-		if H(n.left.left) < H(n.left.right) {
+		if Height(n.left.left) < Height(n.left.right) {
 			n.left = rotateL(n.left)
 		}
 
@@ -151,11 +144,11 @@ func avl(n *Tree) *Tree {
 		return rotateR(n)
 	}
 
-	if H(n.left)-H(n.right) == -2 {
+	if Height(n.left)-Height(n.right) == -2 {
 		// Je fais la rotation inverse sur le sous arbre droit
 
 		// Je fais la rotation D le sous arbre droit
-		if H(n.right.right) < H(n.right.left) {
+		if Height(n.right.right) < Height(n.right.left) {
 			n.right = rotateR(n.right)
 		}
 
@@ -180,6 +173,7 @@ func Insert(t *Tree, val int) *Tree {
 		t.right = Insert(t.right, val)
 	}
 
+	fmt.Println("Avl", t)
 	return avl(t)
 }
 

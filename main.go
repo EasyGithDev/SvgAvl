@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -27,7 +28,7 @@ var (
 	mx        float64
 	my        float64
 
-	// Frequence format
+	// Simple format
 	format = func(t *Tree) string {
 		return fmt.Sprintf("%d", t.val)
 	}
@@ -131,8 +132,6 @@ func rotateR(n *Tree) *Tree {
 
 func avl(n *Tree) *Tree {
 
-	fmt.Printf("node %s , left %s, right %s\n", n, n.left, n.right)
-
 	if Height(n.left)-Height(n.right) == 2 {
 
 		// Je fais la rotation G le sous arbre gauche
@@ -173,7 +172,6 @@ func Insert(t *Tree, val int) *Tree {
 		t.right = Insert(t.right, val)
 	}
 
-	fmt.Println("Avl", t)
 	return avl(t)
 }
 
@@ -251,7 +249,7 @@ func Display(t *Tree, w io.Writer) {
 
 	tWidth := Position(t, 0, 0)
 	tHeight := Height(t)
-	fmt.Println(tHeight)
+
 	canvas := svg.New(w)
 	canvas.Start(canvasWidth, canvasHeight)
 	canvas.Rect(0, 0, canvasWidth, canvasHeight, rectStyle)
@@ -267,36 +265,53 @@ func Display(t *Tree, w io.Writer) {
 
 func main() {
 
-	if len(os.Args[1:]) == 0 {
+	display := flag.String("d", "", "-d=p to display positions (p)")
+	output := flag.String("o", "web", "-o=[web,stdout] output on webserver (web) or stdout (stdout)")
+
+	flag.Parse()
+
+	if len(os.Args[1+flag.NFlag():]) == 0 {
 		log.Println("You must enter somme words ...")
 		os.Exit(1)
+	}
+
+	if *display == "p" {
+		// Position format
+		format = func(t *Tree) string {
+			return t.String()
+		}
 	}
 
 	// Create the t
 	var t *Tree
 
-	for _, v := range os.Args[1:] {
-		val, _ := strconv.Atoi(v)
-		t = Insert(t, val)
+	for _, v := range os.Args[1+flag.NFlag():] {
+		n, _ := strconv.Atoi(v)
+		t = Insert(t, n)
 	}
 
 	// Send result to stdout
-	// Display(t, os.Stdout)
+	if *output == "stdout" {
+		Display(t, os.Stdout)
 
-	// Display the tree on Web browser
-	s := ""
-	buf := bytes.NewBufferString(s)
-	Display(t, buf)
+	} else {
 
-	// Send the output to the client
-	http.Handle("/", http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "image/svg+xml")
-			w.Write(buf.Bytes())
-		}))
-	err := http.ListenAndServe(":8000", nil)
-	if err != nil {
-		log.Fatal("ListenAndServe:", err)
+		// Display the tree on Web browser
+		s := ""
+		buf := bytes.NewBufferString(s)
+		Display(t, buf)
+
+		// Send the output to the client
+		http.Handle("/", http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "image/svg+xml")
+				w.Write(buf.Bytes())
+			}))
+		err := http.ListenAndServe(":8000", nil)
+		if err != nil {
+			log.Fatal("ListenAndServe:", err)
+		}
+
 	}
 
 }

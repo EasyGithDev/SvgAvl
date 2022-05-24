@@ -36,7 +36,7 @@ You may execute the program with a short integer list as parameter :
 go run main.go 8 5 4 3 1 -1
 ```
 
-![alt text](../assets/avl.svg?raw=true)
+![alt text](../media/avl.svg?raw=true)
 
 
 If you want display the node position use the -d option like this : 
@@ -45,7 +45,7 @@ If you want display the node position use the -d option like this :
 go run main.go -d=p 8 5 4 3 1 -1
 ```
 
-![alt text](../assets/avl-p.svg?raw=true)
+![alt text](../media/avl-p.svg?raw=true)
 
 ## Display the result
 
